@@ -13,10 +13,9 @@ type Item struct {
 
 type Order struct {
 	gorm.Model
-	UserID           *uuid.UUID
-	Items            []Item `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	RequestedDate    string
-	DueDate          string
-	LastStatusUpdate string
-	Status           string
+	UserID        *uuid.UUID
+	Items         []Item `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	RequestedDate string
+	DueDate       string
+	Status        string
 }

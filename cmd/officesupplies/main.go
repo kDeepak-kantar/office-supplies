@@ -123,17 +123,17 @@ func main() {
 	logger.LogInfo(logGroup, "Starting up")
 
 	dbConnection := db.Init(db.Input{
-		Host:     getenv("DB_HOST", "localhost"),
-		Port:     getenv("DB_PORT", "5433"),
-		User:     getenv("DB_USER", "testuser"),
-		Password: getenv("DB_PASSWORD", "123456"),
-		Database: getenv("DB_NAME", "inventorydb"),
+		Host:     getenv("DB_HOST", "0.0.0.0"),
+		Port:     getenv("DB_PORT", "3312"),
+		User:     getenv("DB_USER", "coffeetalk"),
+		Password: getenv("DB_PASSWORD", "coffeetalk"),
+		Database: getenv("DB_NAME", "coffeetalk"),
 		Env:      getenv("ENVIRONMENT", "dev"),
 	})
 
 	storage := initStorage(dbConnection)
 	doms := initDomains(storage)
-	doms.Auth.Scheduler()
+	//go doms.Auth.Scheduler()
 	api := initAPIServices(doms)
 
 	web := web.Init(web.Input{

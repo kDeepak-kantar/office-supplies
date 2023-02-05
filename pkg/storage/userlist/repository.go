@@ -19,7 +19,7 @@ type Repository interface {
 	GetAllApproved() ([]*Order, error)
 	GetAllNotApproved() ([]*Order, error)
 	GetOrderByStringiId(id int) (*Order, error)
-	SendRemainder() ([]string, error)
+	SendRemainder() (map[string]interface{}, error)
 }
 
 type service struct {
@@ -156,7 +156,7 @@ func (r *service) GetOrderByStringiId(id int) (*Order, error) {
 // 	return users, nil
 // }
 
-func (r *service) SendRemainder() ([]string, error) {
+func (r *service) SendRemainder() (map[string]interface{}, error) {
 	var orders []Order
 	err := r.db.Where("status = ?", "pending").Preload(clause.Associations).
 		Find(&orders).Error
@@ -167,26 +167,26 @@ func (r *service) SendRemainder() ([]string, error) {
 	today := time.Now().UTC()
 	reminders := []string{}
 	for _, order := range orders {
-		dueDate, err := time.Parse("2006-01-02", order.DueDate)
+		dueDate, err := time.Parse("02/01/2006", order.DueDate)
 		if err != nil {
 			return nil, err
 		}
 
-		if today.AddDate(0, 0, 3).After(dueDate) {
-			// Get admin users
+		if today.AddDate(0, 0, -3).Before(dueDate) {
 			var adminUsers []*user.User
 			err := r.db.Where("role = ?", "admin").Find(&adminUsers).Error
 			if err != nil {
 				return nil, err
 			}
-
-			// Generate automated reminder for each admin user
 			for _, user := range adminUsers {
-				reminder := fmt.Sprintf("Dear %s,This is a reminder that there is a task with ID %d that is due in less than 3 days on %s. Please take necessary actions to approve it.\n\nBest regards,\nAutomated Reminder", user.Name, order.ID, order.DueDate)
+				reminder := fmt.Sprintf("Dear %s,This is a reminder that there is a task with ID %d that is due in less than 3 days on %s. Please take necessary actions to approve it.Best regards,Admin", user.Name, order.ID, order.DueDate)
 				reminders = append(reminders, reminder)
 			}
 		}
 	}
+	result := map[string]interface{}{
+		"rem": reminders,
+	}
 
-	return reminders, nil
+	return result, nil
 }

@@ -1,47 +1,47 @@
-# version: "3.8"
-# services:
-
-#   asdb:
-#     image: officesuppliesdb:latest
-# #     ports:
-# #       - "3312:3306"
-# #     volumes:
-# #       # - ./data/dump.sql:/docker-entrypoint-initdb.d/dump_latest.sql # populate db with data from dump
-# #       - persistent-db-coffeetalk:/var/lib/mysql # persist local data in between runs
-# #     environment:
-# #       MYSQL_DATABASE: coffeetalk
-# #       MYSQL_USER: coffeetalk
-# #       MYSQL_PASSWORD: coffeetalk
-# #       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-
-# # volumes:
-# #   persistent-db-coffeetalk:
-
-version: "3.0"
+version: "3.8"
 services:
-  noticationservice:
-    container_name: backend
-    build:
-      dockerfile: Dockerfile
-      context: .
-      args:
-        - SERVICE_NAME=noticationservice
-    depends_on:
-      - asdb
-    ports: 
-      - 8080:8080
+
   asdb:
-    image: postgres
-    container_name: inventory
+    image: mariadb:latest
     ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_DB: inventorydb
-      POSTGRES_USER: testuser
-      POSTGRES_PASSWORD: 123456
+      - "3312:3306"
     volumes:
-      - db-data:/var/lib/postgresql/testdata
+      # - ./data/dump.sql:/docker-entrypoint-initdb.d/dump_latest.sql # populate db with data from dump
+      - persistent-db-coffeetalk:/var/lib/mysql # persist local data in between runs
+    environment:
+      MYSQL_DATABASE: coffeetalk
+      MYSQL_USER: coffeetalk
+      MYSQL_PASSWORD: coffeetalk
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
 
 volumes:
-  db-data:
+  persistent-db-coffeetalk:
+
+# version: "3.0"
+# services:
+#   noticationservice:
+#     container_name: backend
+#     build:
+#       dockerfile: Dockerfile
+#       context: .
+#       args:
+#         - SERVICE_NAME=noticationservice
+#     depends_on:
+#       - asdb
+#     ports: 
+#       - 8080:8080
+#   asdb:
+#     image: postgres
+#     container_name: inventory
+#     ports:
+#       - "5433:5432"
+#     environment:
+#       POSTGRES_DB: inventorydb
+#       POSTGRES_USER: testuser
+#       POSTGRES_PASSWORD: 123456
+#     volumes:
+#       - db-data:/var/lib/postgresql/testdata
+
+# volumes:
+#   db-data:
 

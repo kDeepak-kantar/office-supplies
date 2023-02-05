@@ -13,7 +13,7 @@ func (d *domain) CreateUserList(c *userlist.Order) error {
 	}
 	return nil
 }
-func (r *domain) SendRemainder() ([]string, error) {
+func (r *domain) SendRemainder() (map[string]interface{}, error) {
 	return r.UserList.SendRemainder()
 }
 func (r *domain) GetAllUserLists() ([]*userlist.Order, error) {

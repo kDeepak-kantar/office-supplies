@@ -8,8 +8,7 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/lib/pq"
-	"gorm.io/driver/postgres"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -63,19 +62,19 @@ func Init(input Input) *gorm.DB {
 
 func establishConnection(ctx context.Context, input Input) (*gorm.DB, error) {
 
-	var dsn string
+	var dbHost string
 	if input.User != "" && input.Password != "" && input.Host != "" {
-		dsn = fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=disable", input.Host, input.Port, input.User, input.Database, input.Password)
+		dbHost = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", input.User, input.Password, input.Host, input.Port, input.Database)
 	}
-	fmt.Println(dsn)
-	//dsn := "host=localhost port=5432 user=testuser dbname=testdb password=123456 sslmode=disable"
 
-	sqlDB, err := sql.Open("postgres", dsn)
+	dsn := fmt.Sprintf("%s?%s", dbHost, "parseTime=true")
+
+	sqlDB, err := sql.Open("mysql", dsn)
 	if err != nil {
-		fmt.Println("err postgres: ", err)
+		fmt.Println("err: ", err)
 		return nil, err
 	}
-	gormDB, err := gorm.Open(postgres.New(postgres.Config{
+	gormDB, err := gorm.Open(mysql.New(mysql.Config{
 		Conn: sqlDB,
 	}), &gorm.Config{
 		Logger: getGormLogger(input.Env),
