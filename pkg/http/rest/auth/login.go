@@ -60,7 +60,7 @@ func (r *repository) GetAllUsers(c *gin.Context) {
 		handleError(c, http.StatusUnprocessableEntity, err)
 		return
 	}
-	if role != "Admin" {
+	if role != "admin" {
 		handleError(c, http.StatusUnauthorized, ErrOperationNotAllowed)
 		return
 	}
@@ -79,7 +79,7 @@ func (r *repository) Admin(c *gin.Context) {
 		handleError(c, http.StatusUnprocessableEntity, err)
 		return
 	}
-	if req.Action != "Admin" {
+	if req.Action != "admin" {
 		handleError(c, http.StatusInternalServerError, ErrOperationNotAllowed)
 		return
 	}
@@ -90,7 +90,7 @@ func (r *repository) Admin(c *gin.Context) {
 		handleError(c, http.StatusUnprocessableEntity, err)
 		return
 	}
-	if role != "Admin" {
+	if role != "admin" {
 		handleError(c, http.StatusUnauthorized, ErrOperationNotAllowed)
 		return
 	}

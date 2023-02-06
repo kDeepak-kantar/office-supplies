@@ -15,6 +15,8 @@ type Order struct {
 	gorm.Model
 	UserID        *uuid.UUID
 	Items         []Item `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	EmpName       string
+	EmpEmail      string
 	RequestedDate string
 	DueDate       string
 	Status        string

@@ -19,6 +19,10 @@ func (r *domain) SendRemainder() (map[string]interface{}, error) {
 func (r *domain) GetAllUserLists() ([]*userlist.Order, error) {
 	return r.UserList.GetAllist()
 }
+func (r *domain) GetUserLists(id string) ([]*userlist.Order, error) {
+	return r.UserList.GetUserList(id)
+}
+
 func (r *domain) GetAllApprovedUserLists() ([]*userlist.Order, error) {
 	return r.UserList.GetAllApproved()
 }
@@ -32,7 +36,7 @@ func (r *domain) GetUserListStatus(id int) (string, error) {
 	}
 	return userDetails.Status, nil
 }
-func (r *domain) UpdateUserList(id int, status string) (*userlist.Order, error) {
+func (r *domain) UpdateUserListstat(id int, status string) (*userlist.Order, error) {
 	statusdetails, err := r.UserList.GetOrderByStringiId(id)
 	if statusdetails == nil || err != nil {
 		return nil, ErrInvalidInputlist
@@ -44,3 +48,16 @@ func (r *domain) UpdateUserList(id int, status string) (*userlist.Order, error) 
 	}
 	return statusdetails, nil
 }
+
+// func (r *domain) UpdateUserList(c *userlist.Order) (*userlist.Order, error) {
+// 	statusdetails, err := r.UserList.GetOrderByStringiId(int(c.ID))
+// 	if statusdetails == nil || err != nil {
+// 		return nil, ErrInvalidInputlist
+// 	}
+// 	statusdetails.Items = c.Items
+// 	err = r.UserList.UpdateList(statusdetails)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return statusdetails, nil
+// }

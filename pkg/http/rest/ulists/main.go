@@ -10,10 +10,11 @@ import (
 type Repository interface {
 	CreateUserList(c *gin.Context)
 	GetAllUserLists(c *gin.Context)
-	UpdateUserList(c *gin.Context)
+	UpdateUserListstat(c *gin.Context)
 	GetAllApprovedUserLists(c *gin.Context)
 	GetAllNotApprovedUserLists(c *gin.Context)
 	SendRemainderrest(c *gin.Context)
+	GetUserList(c *gin.Context)
 }
 
 type repository struct {

@@ -86,13 +86,14 @@ func (r *repository) Configure() {
 	// login
 	api.POST("/login", r.Auth.Login)
 	api.GET("/:id/getallusers", r.Auth.GetAllUsers)
-	api.POST("/:id/admin", r.Auth.Admin)
+	api.POST("/:id/adminaccess", r.Auth.Admin)
 	api.POST("/:id/removeuser", r.Auth.RemoveUser)
 	// User LIst
 	api.POST("/createlist", r.Userlist.CreateUserList)
 	api.GET("/:id/getalluserlist", r.Userlist.GetAllUserLists)
-	api.POST("/updateuser", r.Userlist.UpdateUserList)
+	api.POST("/updateorderstat", r.Userlist.UpdateUserListstat)
 	api.GET("/:id/getallapproveduser", r.Userlist.GetAllApprovedUserLists)
+	api.POST("/getuserorder", r.Userlist.GetUserList)
 	api.GET("/:id/getallnotapproved", r.Userlist.GetAllNotApprovedUserLists)
 	api.GET("/sendremainder", r.Userlist.SendRemainderrest)
 

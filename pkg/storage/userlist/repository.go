@@ -20,6 +20,7 @@ type Repository interface {
 	GetAllNotApproved() ([]*Order, error)
 	GetOrderByStringiId(id int) (*Order, error)
 	SendRemainder() (map[string]interface{}, error)
+	GetUserList(id string) ([]*Order, error)
 }
 
 type service struct {
@@ -64,6 +65,22 @@ func (r *service) CreateUserList(k *Order) error {
 func (r *service) GetAllist() ([]*Order, error) {
 	var usrlists []*Order
 	err := r.db.Preload(clause.Associations).
+		Find(&usrlists).Error
+	if err != nil {
+		return nil, err
+	}
+
+	for _, order := range usrlists {
+		order.DueDate = formatDate(order.DueDate)
+		order.RequestedDate = formatDate(order.RequestedDate)
+	}
+
+	return usrlists, nil
+}
+
+func (r *service) GetUserList(id string) ([]*Order, error) {
+	var usrlists []*Order
+	err := r.db.Preload(clause.Associations).Where("user_id = ?", id).
 		Find(&usrlists).Error
 	if err != nil {
 		return nil, err

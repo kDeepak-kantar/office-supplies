@@ -11,10 +11,12 @@ type Domain interface {
 	CreateUserList(c *userlist.Order) error
 	GetAllUserLists() ([]*userlist.Order, error)
 	GetUserListStatus(id int) (string, error)
-	UpdateUserList(id int, status string) (*userlist.Order, error)
+	UpdateUserListstat(id int, status string) (*userlist.Order, error)
 	GetAllApprovedUserLists() ([]*userlist.Order, error)
 	GetAllNotApprovedUserLists() ([]*userlist.Order, error)
 	SendRemainder() (map[string]interface{}, error)
+	GetUserLists(id string) ([]*userlist.Order, error)
+	// UpdateUserList(c *userlist.Order) (*userlist.Order, error)
 }
 
 type domain struct {
