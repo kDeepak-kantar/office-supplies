@@ -120,7 +120,7 @@ func (r *repository) RemoveUser(c *gin.Context) {
 		handleError(c, http.StatusUnprocessableEntity, err)
 		return
 	}
-	if role != "Admin" {
+	if role != "admin" {
 		handleError(c, http.StatusUnauthorized, ErrOperationNotAllowed)
 		return
 	}
