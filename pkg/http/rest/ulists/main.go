@@ -15,6 +15,7 @@ type Repository interface {
 	GetAllNotApprovedUserLists(c *gin.Context)
 	SendRemainderrest(c *gin.Context)
 	GetUserList(c *gin.Context)
+	UpdateUserList(c *gin.Context)
 }
 
 type repository struct {

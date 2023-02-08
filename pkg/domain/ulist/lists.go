@@ -49,15 +49,15 @@ func (r *domain) UpdateUserListstat(id int, status string) (*userlist.Order, err
 	return statusdetails, nil
 }
 
-// func (r *domain) UpdateUserList(c *userlist.Order) (*userlist.Order, error) {
-// 	statusdetails, err := r.UserList.GetOrderByStringiId(int(c.ID))
-// 	if statusdetails == nil || err != nil {
-// 		return nil, ErrInvalidInputlist
-// 	}
-// 	statusdetails.Items = c.Items
-// 	err = r.UserList.UpdateList(statusdetails)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	return statusdetails, nil
-// }
+func (r *domain) UpdateUserList(c *userlist.OrderUpdate) (*userlist.Order, error) {
+	getorder, err := r.UserList.GetOrderByStringiId(c.Id)
+	if getorder == nil || err != nil {
+		return nil, ErrInvalidInputlist
+	}
+	getorder.Items = c.Items
+	err = r.UserList.UpdateList(getorder)
+	if err != nil {
+		return nil, err
+	}
+	return getorder, nil
+}

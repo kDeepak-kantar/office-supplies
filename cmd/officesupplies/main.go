@@ -133,7 +133,7 @@ func main() {
 
 	storage := initStorage(dbConnection)
 	doms := initDomains(storage)
-	//go doms.Auth.Scheduler()
+	go doms.Auth.Scheduler()
 	api := initAPIServices(doms)
 
 	web := web.Init(web.Input{

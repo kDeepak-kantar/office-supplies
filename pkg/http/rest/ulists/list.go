@@ -23,13 +23,13 @@ type OrderRequest struct {
 	Status        string        `json:"status"`
 }
 
-// type OrderUpdate struct {
-// 	Id string  `json:"id"`
-// 	UserID   string        `json:"userid"`
-// 	Items    []ItemRequest `json:"items"`
-// 	EmpName  string        `json:"employeeName"`
-// 	EmpEmail string        `json:"email"`
-// }
+type OrderUpdate struct {
+	Id       int           `json:"id"`
+	UserID   string        `json:"userid"`
+	Items    []ItemRequest `json:"items"`
+	EmpName  string        `json:"employeeName"`
+	EmpEmail string        `json:"email"`
+}
 
 type Approved struct {
 	ID     int    `json:"id"`
@@ -144,31 +144,37 @@ func (r *repository) UpdateUserListstat(c *gin.Context) {
 
 }
 
-// func (r *repository) UpdateUserList(c *gin.Context) {
-// 	var ListStat OrderUpdate
-// 	err := c.ShouldBindJSON(&ListStat)
-// 	if err != nil {
-// 		handleError(c, http.StatusInternalServerError, err)
-// 		return
-// 	}
-// 	items := []userlist.Item{}
+func (r *repository) UpdateUserList(c *gin.Context) {
+	var ListStat OrderUpdate
+	err := c.ShouldBindJSON(&ListStat)
+	if err != nil {
+		handleError(c, http.StatusInternalServerError, err)
+		return
+	}
+	items := []userlist.Item{}
 
-// 	for _, itemx := range ListStat.Items {
-// 		as := userlist.Item{
-// 			Quantity: itemx.Quantity,
-// 			ItemID:   itemx.Id,
-// 		}
-// 		items = append(items, as)
+	for _, itemx := range ListStat.Items {
+		as := userlist.Item{
+			Quantity: itemx.Quantity,
+			ItemID:   itemx.Id,
+		}
+		items = append(items, as)
 
-// 	}
-// 	uuids, err := uuid.FromString(ListStat.UserID)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	lst := r.Ulist.UpdateUserList(&userlist.Order{
-// 		Id : ListStat.Id,
+	}
+	uuids, err := uuid.FromString(ListStat.UserID)
+	if err != nil {
+		panic(err)
+	}
+	lst, err := r.Ulist.UpdateUserList(&userlist.OrderUpdate{
+		Id:       ListStat.Id,
+		UserID:   uuids.String(),
+		Items:    items,
+		EmpName:  ListStat.EmpName,
+		EmpEmail: ListStat.EmpEmail,
+	})
+	if err != nil {
+		handleError(c, http.StatusUnprocessableEntity, err)
+	}
 
-// 	})
-// 	// lst := r.Ulist.CreateUserList(&twin)
-// 	c.JSON(http.StatusOK, lst)
-// }
+	c.JSON(http.StatusOK, lst)
+}

@@ -94,13 +94,14 @@ func (r *repository) Configure() {
 	api.POST("/updateorderstat", r.Userlist.UpdateUserListstat)
 	api.GET("/:id/getallapproveduser", r.Userlist.GetAllApprovedUserLists)
 	api.POST("/getuserorder", r.Userlist.GetUserList)
+	api.POST("/updateuserorder", r.Userlist.UpdateUserList)
 	api.GET("/:id/getallnotapproved", r.Userlist.GetAllNotApprovedUserLists)
 	api.GET("/sendremainder", r.Userlist.SendRemainderrest)
 
 }
 func CORSConfig() cors.Config {
 	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:3000"}
+	corsConfig.AllowOrigins = []string{"http://localhost:7068"}
 	corsConfig.AllowCredentials = true
 	corsConfig.AddAllowHeaders("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers", "Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization")
 	corsConfig.AddAllowMethods("GET", "POST", "PUT", "DELETE")

@@ -5,6 +5,9 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"log"
+	"net/smtp"
+	"time"
 
 	"github.com/Deepak/pkg/storage/db/user"
 )
@@ -80,5 +83,50 @@ func (r *domain) RemoveUser(userId string) error {
 	if err != nil {
 		return err
 	}
+	return nil
+}
+
+func (r *domain) Scheduler() {
+	for {
+		now := time.Now()
+		next := now.Add(time.Hour * 24)
+		next = time.Date(next.Year(), next.Month(), next.Day(), 9, 0, 0, 0, next.Location())
+		t := time.NewTimer(next.Sub(now))
+		<-t.C
+
+		if time.Now().Weekday() == time.Monday {
+			adminEmails, err := r.User.GetAdminEmails()
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			for _, adminEmail := range adminEmails {
+				if err := r.sendEmail(adminEmail); err != nil {
+					log.Println(err)
+					continue
+				}
+			}
+		}
+
+	}
+}
+func (r *domain) sendEmail(to string) error {
+	from := "Kurravenkata.saideepak.kantar@blackwoodseven.com"
+	subject := "Pending Orders"
+	body := "This is a reminder about the pending orders. Please check and take necessary action."
+
+	// Set up authentication information.
+	auth := smtp.PlainAuth("", "Kurravenkata.saideepak.kantar@blackwoodseven.com", "Deepak@cse123", "smtp.example.com")
+	err := smtp.SendMail(
+		"smtp.example.com:25",
+		auth,
+		from,
+		[]string{to},
+		[]byte("Subject: "+subject+"\r\n"+body),
+	)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

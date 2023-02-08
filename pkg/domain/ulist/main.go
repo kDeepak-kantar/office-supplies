@@ -16,7 +16,7 @@ type Domain interface {
 	GetAllNotApprovedUserLists() ([]*userlist.Order, error)
 	SendRemainder() (map[string]interface{}, error)
 	GetUserLists(id string) ([]*userlist.Order, error)
-	// UpdateUserList(c *userlist.Order) (*userlist.Order, error)
+	UpdateUserList(c *userlist.OrderUpdate) (*userlist.Order, error)
 }
 
 type domain struct {

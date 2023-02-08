@@ -21,3 +21,11 @@ type Order struct {
 	DueDate       string
 	Status        string
 }
+
+type OrderUpdate struct {
+	Id       int    `json:"id"`
+	UserID   string `json:"userid"`
+	Items    []Item `json:"items"`
+	EmpName  string `json:"employeeName"`
+	EmpEmail string `json:"email"`
+}

@@ -12,7 +12,7 @@ type Domain interface {
 	GetAllUsers() ([]*user.User, error)
 	AdminAccess(userId string) (*user.User, error)
 	RemoveUser(userId string) error
-	// Scheduler()
+	Scheduler()
 }
 
 type domain struct {

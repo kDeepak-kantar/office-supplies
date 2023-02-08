@@ -146,6 +146,7 @@ func (r *service) GetOrderByStringId(id string) (*Order, error) {
 func (r *service) UpdateList(c *Order) error {
 	return r.db.Save(&c).Error
 }
+
 func (r *service) GetOrderByStringiId(id int) (*Order, error) {
 	userlist := Order{}
 	err := r.db.Preload(clause.Associations).Where("id = ?", id).First(&userlist).Error
@@ -157,21 +158,6 @@ func (r *service) GetOrderByStringiId(id int) (*Order, error) {
 	}
 	return &userlist, nil
 }
-
-// func (r *service) GetUsersListsByStringIds(ids []string) ([]*Order, error) {
-// 	users := []*Order{}
-// 	err := r.db.
-// 		Preload(clause.Associations).
-// 		Where("id in (?)", ids).
-// 		Find(&users).Error
-// 	if err != nil {
-// 		if errors.Is(err, gorm.ErrRecordNotFound) {
-// 			return nil, nil
-// 		}
-// 		return nil, err
-// 	}
-// 	return users, nil
-// }
 
 func (r *service) SendRemainder() (map[string]interface{}, error) {
 	var orders []Order
