@@ -1,0 +1,177 @@
+version: 2.1
+
+executors:
+  # Possible executors for packages
+  golang:
+    docker:
+      - image: circleci/golang
+    resource_class: small
+
+parameters:
+  # Parameters per package
+  officesupplies:
+    type: boolean
+    default: true
+
+orbs:
+  aws-cli: circleci/aws-cli@2.0
+
+commands:
+  # Reusable command with parameters
+  tidy:
+    parameters:
+      target:
+        type: string
+    steps:
+      - run:
+          name: Tidy dependencies
+          command: make tidy TARGET=<<parameters.target>>
+  get-dependencies:
+    steps:
+      - run:
+          name: Get dependencies
+          command: make deps
+  build:
+    parameters:
+      target:
+        type: string
+    steps:
+      - run:
+          name: Build
+          command: make build TARGET=<<parameters.target>>
+  build-release:
+    parameters:
+      target:
+        type: string
+    steps:
+      - run:
+          name: Release
+          command: make release TARGET=<<parameters.target>>
+  test:
+    parameters:
+      target:
+        type: string
+    steps:
+      - run:
+          name: Test
+          command: make tests TARGET=<<parameters.target>>
+  log-in-aws-ecr:
+    parameters:
+      host:
+        type: string
+      region:
+        type: string
+    steps:
+      - run:
+          name: Log into AWS ECR
+          command: |
+            aws ecr get-login-password --region <<parameters.region>> | docker login --username AWS --password-stdin <<parameters.host>>
+  build-docker-image:
+    parameters:
+      sha1:
+        type: string
+      workflow-id:
+        type: string
+      target:
+        type: string
+      docker-repo:
+        type: string
+    steps:
+      - run:
+          name: Build Docker Image
+          command: |
+            make release TARGET=<<parameters.target>>
+            docker build -f Dockerfile \
+            --build-arg GIT_SHA1=<<parameters.sha1>> \
+            --build-arg SERVICE_NAME=<<parameters.target>> \
+            --build-arg EXTERNAL_URL=https://circleci.com/workflow-run/<<parameters.workflow-id>> \
+            -t blackwoodseven/<<parameters.docker-repo>>:<<parameters.workflow-id>> .
+  push-docker-image:
+    parameters:
+      circleci-branch:
+        type: string
+      workflow-id:
+        type: string
+      target:
+        type: string
+      ecr-repo:
+        type: string
+      img-tag-version:
+        type: string
+    steps:
+      - run:
+          name: Push Docker Image
+          command: |
+            if [ "<<pipeline.git.branch>>" = "main" ]; then TAG=<<parameters.img-tag-version>>; else TAG=<<pipeline.git.branch>>; fi;
+            aws ecr describe-repositories --repository-names=blackwoodseven/<<parameters.target>> &> /dev/null || aws ecr create-repository --repository-name blackwoodseven/<<parameters.target>>
+            docker tag blackwoodseven/<<parameters.target>>:<<parameters.workflow-id>> <<parameters.ecr-repo>>/<<parameters.target>>:${TAG}
+            bash ./scripts/check-ecr-image.sh blackwoodseven/<<parameters.target>> ${TAG}
+            if [ $? == 0 ]; then docker push <<parameters.ecr-repo>>/<<parameters.target>>:${TAG}; fi;
+  git-tag-release-check:
+    parameters:
+      img-tag-version:
+        type: string
+    steps:
+      - run:
+          name: Check tag exists
+          command: |
+            if [ "<<pipeline.git.branch>>" = "main" ]; then if [ $(git tag -l "<<parameters.img-tag-version>>") ]; then echo 'tag already exists'; exit 1; fi; fi;
+  git-tag-release:
+    parameters:
+      img-tag-version:
+        type: string
+    steps:
+      - run:
+          name: Tag branch
+          command: |
+            if [ "<<pipeline.git.branch>>" = "main" ]; then  git tag <<parameters.img-tag-version>> main; git push origin --tags; fi;
+
+jobs:
+  # General step build for the project
+  build-officesupplies:
+    working_directory: /go/src/github.com/blackwoodseven/officesupplies
+    environment:
+      TARGET: officesupplies
+      DOCKER_REPO: officesupplies
+      IMAGE_TAG_VERSION: v0.5.1-api
+    executor: golang
+    steps:
+        - checkout
+        - git-tag-release-check:
+            img-tag-version: ${IMAGE_TAG_VERSION}
+        - tidy:
+            target: ${TARGET}
+        - test:
+            target: ${TARGET}
+        - build:
+            target: ${TARGET}
+        - setup_remote_docker:
+            version: 19.03.13
+            docker_layer_caching: true
+        - aws-cli/setup
+        - log-in-aws-ecr:
+            host: ${ECR_HOST}
+            region: ${AWS_DEFAULT_REGION}
+        - build-docker-image:
+            target: ${TARGET}
+            docker-repo: ${DOCKER_REPO}
+            sha1: ${CIRCLE_SHA1}
+            workflow-id: ${CIRCLE_WORKFLOW_ID}
+        - push-docker-image:
+            target: ${DOCKER_REPO}
+            workflow-id: ${CIRCLE_WORKFLOW_ID}
+            circleci-branch: ${CIRCLE_BRANCH}
+            ecr-repo: ${ECR_REPO}
+            img-tag-version: ${IMAGE_TAG_VERSION}
+        - git-tag-release:
+            img-tag-version: ${IMAGE_TAG_VERSION}
+
+workflows:
+  version: 2
+
+  officesupplies:
+    when: << pipeline.parameters.officesupplies >>
+    jobs:
+      - build-officesupplies:
+          context:
+            - aws-ecr
