@@ -6,7 +6,7 @@ import (
 	"github.com/Deepak/pkg/domain/auth"
 	"github.com/Deepak/pkg/domain/ulist"
 	"github.com/Deepak/pkg/storage/db/user"
-	"github.com/Deepak/pkg/storage/userlist"
+	"github.com/Deepak/pkg/storage/db/userlist"
 )
 
 type Domains struct {

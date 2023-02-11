@@ -4,40 +4,45 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Deepak/pkg/storage/userlist"
+	"github.com/Deepak/pkg/storage/db/userlist"
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
 )
 
+const (
+	ResponseMessage string = "Order Placed Successfully"
+	ErrorResponse   string = "Order not placed"
+)
+
 type ItemRequest struct {
-	Id       string `json:"id"`
-	Quantity string `json:"qty"`
+	ItemID   string `json:"itemid"`
+	Quantity string `json:"quantity"`
 }
 type OrderRequest struct {
 	UserID        string        `json:"userid"`
 	Items         []ItemRequest `json:"items"`
-	EmpName       string        `json:"employeeName"`
-	EmpEmail      string        `json:"email"`
-	RequestedDate string        `json:"requestedDate"`
-	DueDate       string        `json:"dueDate"`
-	Status        string        `json:"status"`
+	EmpName       string        `json:"employeename"`
+	EmpEmail      string        `json:"emailid"`
+	RequestedDate string        `json:"requesteddate"`
+	DueDate       string        `json:"duedate"`
+	Status        string        `json:"orderstatus"`
 }
 
 type OrderUpdate struct {
-	Id       int           `json:"id"`
+	OrderID  int           `json:"orderid"`
 	UserID   string        `json:"userid"`
 	Items    []ItemRequest `json:"items"`
-	EmpName  string        `json:"employeeName"`
-	EmpEmail string        `json:"email"`
+	EmpName  string        `json:"employeename"`
+	EmpEmail string        `json:"emailid"`
 }
 
 type Approved struct {
-	ID     int    `json:"id"`
-	Status string `json:"status"`
+	OrderID int    `json:"orderid"`
+	Status  string `json:"orderstatus"`
 }
 
 type UserOrder struct {
-	UserId string `json:"userid"`
+	UserID string `json:"userid"`
 }
 
 func (r *repository) CreateUserList(c *gin.Context) {
@@ -53,16 +58,16 @@ func (r *repository) CreateUserList(c *gin.Context) {
 	for _, itemx := range orderitems.Items {
 		a := userlist.Item{
 			Quantity: itemx.Quantity,
-			ItemID:   itemx.Id,
+			ItemID:   itemx.ItemID,
 		}
 		items = append(items, a)
 
 	}
 	uuids, err := uuid.FromString(orderitems.UserID)
 	if err != nil {
-		panic(err)
+		handleError(c, http.StatusInternalServerError, err)
 	}
-	lst := r.Ulist.CreateUserList(&userlist.Order{
+	if lst := r.Ulist.CreateUserList(&userlist.Order{
 		UserID:        &uuids,
 		Items:         items,
 		EmpName:       orderitems.EmpName,
@@ -70,8 +75,10 @@ func (r *repository) CreateUserList(c *gin.Context) {
 		RequestedDate: orderitems.RequestedDate,
 		DueDate:       orderitems.DueDate,
 		Status:        orderitems.Status,
-	})
-	c.JSON(http.StatusOK, lst)
+	}); lst != nil {
+		c.JSON(http.StatusBadRequest, ErrorResponse)
+	}
+	c.JSON(http.StatusOK, ResponseMessage)
 }
 func (r *repository) GetAllUserLists(c *gin.Context) {
 	allUsers, err := r.Ulist.GetAllUserLists()
@@ -91,7 +98,7 @@ func (r *repository) GetUserList(c *gin.Context) {
 		handleError(c, http.StatusInternalServerError, err)
 		return
 	}
-	Uslist, err := r.Ulist.GetUserLists(orderitem.UserId)
+	Uslist, err := r.Ulist.GetUserLists(orderitem.UserID)
 	if err != nil {
 		handleError(c, http.StatusInternalServerError, err)
 		return
@@ -135,7 +142,7 @@ func (r *repository) UpdateUserListstat(c *gin.Context) {
 		handleError(c, http.StatusInternalServerError, err)
 		return
 	}
-	user, err := r.Ulist.UpdateUserListstat(ListStat.ID, ListStat.Status)
+	user, err := r.Ulist.UpdateUserListstat(ListStat.OrderID, ListStat.Status)
 	if err != nil {
 		handleError(c, http.StatusUnprocessableEntity, err)
 		return
@@ -156,17 +163,19 @@ func (r *repository) UpdateUserList(c *gin.Context) {
 	for _, itemx := range ListStat.Items {
 		as := userlist.Item{
 			Quantity: itemx.Quantity,
-			ItemID:   itemx.Id,
+			ItemID:   itemx.ItemID,
 		}
 		items = append(items, as)
 
 	}
 	uuids, err := uuid.FromString(ListStat.UserID)
 	if err != nil {
-		panic(err)
+		handleError(c, http.StatusUnprocessableEntity, err)
+		return
+
 	}
 	lst, err := r.Ulist.UpdateUserList(&userlist.OrderUpdate{
-		Id:       ListStat.Id,
+		Id:       ListStat.OrderID,
 		UserID:   uuids.String(),
 		Items:    items,
 		EmpName:  ListStat.EmpName,
@@ -174,6 +183,7 @@ func (r *repository) UpdateUserList(c *gin.Context) {
 	})
 	if err != nil {
 		handleError(c, http.StatusUnprocessableEntity, err)
+		return
 	}
 
 	c.JSON(http.StatusOK, lst)

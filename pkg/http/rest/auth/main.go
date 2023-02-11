@@ -2,7 +2,6 @@ package auth
 
 import (
 	"github.com/Deepak/pkg/domain/auth"
-	"github.com/Deepak/pkg/http/web/usersession"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,8 +17,7 @@ type repository struct {
 }
 
 type Input struct {
-	Auth        auth.Domain
-	UserSession usersession.Repository
+	Auth auth.Domain
 }
 
 func Init(input Input) Repository {

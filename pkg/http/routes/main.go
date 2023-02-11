@@ -6,12 +6,9 @@ import (
 
 	"github.com/Deepak/pkg/http/rest"
 	"github.com/Deepak/pkg/http/rest/auth"
+	"github.com/Deepak/pkg/http/rest/health"
 	"github.com/Deepak/pkg/http/rest/ulists"
-	"github.com/Deepak/pkg/http/web"
 	"github.com/Deepak/pkg/storage/db/user"
-
-	"github.com/gin-contrib/cors"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,10 +24,10 @@ type repository struct {
 
 type Input struct {
 	API      rest.Repository
-	Web      web.Repository
 	Auth     auth.Repository
 	User     user.Repository
 	Userlist ulists.Repository
+	Health   health.Repository
 }
 
 // New creates a routing adapter given the necessary repositories.
@@ -45,10 +42,6 @@ func (r *repository) serverStaticFiles(engine *gin.Engine) {
 
 	engine.Static("/css", "public/css/")
 	engine.Static("/js", "public/js/")
-
-	engine.HTMLRender = r.Web.NewMultiTemplate(map[string]map[string][]string{
-		"public/views": r.Web.GetViews(),
-	})
 }
 
 func (r *repository) setupRedirects(engine *gin.Engine) {
@@ -67,7 +60,6 @@ func (r *repository) setupRedirects(engine *gin.Engine) {
 // Configure setups the actual routing for the HTTP API.
 func (r *repository) Configure() {
 	engine := r.API.Engine()
-	engine.Use(cors.New(CORSConfig()))
 	r.serverStaticFiles(engine)
 	r.setupRedirects(engine)
 
@@ -75,11 +67,7 @@ func (r *repository) Configure() {
 	engine.Use(gin.Recovery())
 
 	// metrics
-
-	// web
-	engine.GET("/login", r.Web.GetLogin)
-	engine.GET("/overview", r.Web.GetOverview)
-
+	engine.GET("/health", r.Health.GetHealth)
 	// api
 	api := engine.Group("/api")
 
@@ -98,12 +86,4 @@ func (r *repository) Configure() {
 	api.GET("/:id/getallnotapproved", r.Userlist.GetAllNotApprovedUserLists)
 	api.GET("/sendremainder", r.Userlist.SendRemainderrest)
 
-}
-func CORSConfig() cors.Config {
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{"http://localhost:7068"}
-	corsConfig.AllowCredentials = true
-	corsConfig.AddAllowHeaders("Access-Control-Allow-Headers", "access-control-allow-origin, access-control-allow-headers", "Content-Type", "X-XSRF-TOKEN", "Accept", "Origin", "X-Requested-With", "Authorization")
-	corsConfig.AddAllowMethods("GET", "POST", "PUT", "DELETE")
-	return corsConfig
 }

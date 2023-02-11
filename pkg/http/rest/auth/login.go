@@ -5,8 +5,12 @@ import (
 	"net/http"
 
 	"github.com/Deepak/pkg/domain/auth"
-	"github.com/Deepak/pkg/http/web/usersession"
 	"github.com/gin-gonic/gin"
+)
+
+const (
+	Adminuser  string = "admin"
+	Normaluser string = "normal"
 )
 
 type LoginRequest struct {
@@ -40,27 +44,20 @@ func (r *repository) Login(c *gin.Context) {
 		return
 	}
 
-	err = r.UserSession.SetCookie(&usersession.SetCookieRequest{
-		Context: c,
-		UserID:  resp.User.ID.String(),
-	})
-	if err != nil {
-		handleError(c, http.StatusInternalServerError, err)
-		return
-	}
-
 	c.JSON(http.StatusOK, resp.User)
 }
 
+//get the logged in user id and get his role, if not admin, send unauthorized error
+
 func (r *repository) GetAllUsers(c *gin.Context) {
-	//get the logged in user id and get his role, if not admin, send unauthorized error
+
 	userId := c.Param("id")
 	role, err := r.Auth.GetUserRole(userId)
 	if err != nil {
 		handleError(c, http.StatusUnprocessableEntity, err)
 		return
 	}
-	if role != "admin" {
+	if role != Adminuser {
 		handleError(c, http.StatusUnauthorized, ErrOperationNotAllowed)
 		return
 	}
@@ -79,7 +76,7 @@ func (r *repository) Admin(c *gin.Context) {
 		handleError(c, http.StatusUnprocessableEntity, err)
 		return
 	}
-	if req.Action != "admin" {
+	if req.Action != Adminuser {
 		handleError(c, http.StatusInternalServerError, ErrOperationNotAllowed)
 		return
 	}
@@ -90,7 +87,7 @@ func (r *repository) Admin(c *gin.Context) {
 		handleError(c, http.StatusUnprocessableEntity, err)
 		return
 	}
-	if role != "admin" {
+	if role != Adminuser {
 		handleError(c, http.StatusUnauthorized, ErrOperationNotAllowed)
 		return
 	}
@@ -120,7 +117,7 @@ func (r *repository) RemoveUser(c *gin.Context) {
 		handleError(c, http.StatusUnprocessableEntity, err)
 		return
 	}
-	if role != "admin" {
+	if role != Adminuser {
 		handleError(c, http.StatusUnauthorized, ErrOperationNotAllowed)
 		return
 	}

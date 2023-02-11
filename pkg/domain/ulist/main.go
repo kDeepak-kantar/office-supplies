@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/Deepak/pkg/storage/db/user"
-	"github.com/Deepak/pkg/storage/userlist"
+	"github.com/Deepak/pkg/storage/db/userlist"
 )
 
 type Domain interface {

@@ -1,5 +1,16 @@
 version: "3.8"
 services:
+  officesupplies:
+    container_name: backend
+    build:
+      dockerfile: Dockerfile
+      context: .
+      args:
+        - SERVICE_NAME=officesupplies
+    depends_on:
+      - asdb
+    ports: 
+      - 7068:8080
 
   asdb:
     image: mariadb:latest
@@ -17,31 +28,4 @@ services:
 volumes:
   persistent-db-coffeetalk:
 
-# version: "3.0"
-# services:
-#   noticationservice:
-#     container_name: backend
-#     build:
-#       dockerfile: Dockerfile
-#       context: .
-#       args:
-#         - SERVICE_NAME=noticationservice
-#     depends_on:
-#       - asdb
-#     ports: 
-#       - 8080:8080
-#   asdb:
-#     image: postgres
-#     container_name: inventory
-#     ports:
-#       - "5433:5432"
-#     environment:
-#       POSTGRES_DB: inventorydb
-#       POSTGRES_USER: testuser
-#       POSTGRES_PASSWORD: 123456
-#     volumes:
-#       - db-data:/var/lib/postgresql/testdata
-
-# volumes:
-#   db-data:
 

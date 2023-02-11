@@ -9,7 +9,7 @@ RUN echo ${SERVICE_NAME}
 WORKDIR /tmp/${SERVICE_NAME}
 
 # We want to populate the module cache based on the go.{mod,sum} files.
-COPY go_bk.mod .
+COPY go.mod .
 COPY go.sum .
 
 RUN go mod download

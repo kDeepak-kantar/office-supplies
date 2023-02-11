@@ -8,15 +8,14 @@ import (
 	ulistDom "github.com/Deepak/pkg/domain/ulist"
 	"github.com/Deepak/pkg/http/rest"
 	"github.com/Deepak/pkg/http/rest/auth"
+	"github.com/Deepak/pkg/http/rest/health"
 	"github.com/Deepak/pkg/http/rest/ulists"
 	"github.com/Deepak/pkg/http/routes"
-	"github.com/Deepak/pkg/http/web"
-	"github.com/Deepak/pkg/http/web/usersession"
 	"github.com/Deepak/pkg/logger"
 	db "github.com/Deepak/pkg/storage"
 	userDb "github.com/Deepak/pkg/storage/db/user"
 
-	userlistDb "github.com/Deepak/pkg/storage/userlist"
+	userlistDb "github.com/Deepak/pkg/storage/db/userlist"
 	"gorm.io/gorm"
 )
 
@@ -47,9 +46,8 @@ func initStorage(conn *gorm.DB) Storage {
 }
 
 type Domains struct {
-	UList       ulistDom.Domain
-	Auth        authDom.Domain
-	UserSession usersession.Repository
+	UList ulistDom.Domain
+	Auth  authDom.Domain
 }
 
 func initDomains(s Storage) Domains {
@@ -71,12 +69,10 @@ func initDomains(s Storage) Domains {
 		logger.LogCriticalError(logGroup, fmt.Errorf("error: failed to init userlist domain"))
 		panic(err)
 	}
-	usersession := usersession.Init()
 
 	return Domains{
-		Auth:        auth,
-		UList:       ulis,
-		UserSession: usersession,
+		Auth:  auth,
+		UList: ulis,
 	}
 }
 
@@ -84,6 +80,7 @@ type API struct {
 	Auth     auth.Repository
 	Rest     rest.Repository
 	UserList ulists.Repository
+	Health   health.Repository
 }
 
 func initAPIServices(d Domains) API {
@@ -96,8 +93,7 @@ func initAPIServices(d Domains) API {
 	})
 
 	auth := auth.Init(auth.Input{
-		Auth:        d.Auth,
-		UserSession: d.UserSession,
+		Auth: d.Auth,
 	})
 
 	userlist, err := ulists.Init(ulists.Input{
@@ -111,6 +107,7 @@ func initAPIServices(d Domains) API {
 		Auth:     auth,
 		UserList: userlist,
 		Rest:     config,
+		Health:   health.Init(),
 	}
 }
 
@@ -136,17 +133,12 @@ func main() {
 	go doms.Auth.Scheduler()
 	api := initAPIServices(doms)
 
-	web := web.Init(web.Input{
-		User:        storage.User,
-		UserSession: doms.UserSession,
-	})
-
 	// init api routes
 	routes := routes.Init(routes.Input{
 		API:      api.Rest,
-		Web:      web,
 		Auth:     api.Auth,
 		Userlist: api.UserList,
+		Health:   api.Health,
 	})
 	routes.Configure()
 

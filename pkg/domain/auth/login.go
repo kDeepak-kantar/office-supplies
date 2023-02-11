@@ -12,7 +12,10 @@ import (
 	"github.com/Deepak/pkg/storage/db/user"
 )
 
-//const path string = "~/token.json"
+const (
+	Adminuser  string = "admin"
+	Normaluser string = "normal"
+)
 
 type LoginRequest struct {
 	Email string
@@ -66,7 +69,7 @@ func (r *domain) AdminAccess(userId string) (*user.User, error) {
 	if userDetails == nil || err != nil {
 		return nil, ErrInvalidUser
 	}
-	userDetails.Role = "admin"
+	userDetails.Role = Adminuser
 	err = r.User.UpdateUser(userDetails)
 	if err != nil {
 		return nil, err
